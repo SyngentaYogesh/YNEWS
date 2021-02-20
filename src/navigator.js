@@ -1,6 +1,7 @@
 import {createAppContainer} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
 import HomeScreen from './screens/HomeScreen';
+import WebScreen from './screens/WebScreen';
 
 const StackNavigator = createStackNavigator(
   {
@@ -8,7 +9,7 @@ const StackNavigator = createStackNavigator(
   },
   {
     defaultNavigationOptions: {
-      title: 'Inshorts',
+      title: 'YNEWS',
       header: null,
     },
     initialRouteName: 'Home',

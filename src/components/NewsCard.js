@@ -34,7 +34,7 @@ export default class NewsCard extends Component {
     }
 
     return byline_1
-      .map(item => {
+      .map((item) => {
         const {type, text} = item;
         if (type === 'TEXT') {
           return text.trim();
@@ -56,7 +56,7 @@ export default class NewsCard extends Component {
       bottom_headline,
       bottom_text,
     } = this.props.data.news_obj;
-
+    // console.log('news_obj', this.props.data.news_obj);
     return (
       <View style={styles.container}>
         <View style={styles.top}>

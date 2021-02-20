@@ -15,6 +15,13 @@ import {getStatusBarHeight} from 'react-native-status-bar-height';
 import {getScreenHeight} from '../helpers/DimensionsHelper';
 import {bindActionCreators} from 'redux';
 
+import {
+  setCurrentNewsSlideIndex,
+  fetchCategoryNews,
+  fetchTopicNews,
+  fetchAllYnews,
+} from '../reducers/news';
+
 const SCREEN_HEIGHT = getScreenHeight();
 const STATUS_BAR_HEIGHT = getStatusBarHeight();
 
@@ -22,15 +29,25 @@ class WebScreen extends Component {
   handleBackOnPress = () => {
     this.props.moveToPage(1);
   };
+  componentDidMount = () => {
+    // const {selectedCategory} = this.props;
+    // this.props.actions.fetchCategoryNews(selectedCategory);
+    // this.props.actions.fetchAllYnews(1);
+  };
 
   render() {
-    const {isWebViewVisible, currentSlideData} = this.props;
-    if (!isWebViewVisible || !currentSlideData) {
-      return <View style={styles.container}></View>;
-    }
-
-    const {news_obj} = currentSlideData;
-    const {source_name, source_url} = news_obj;
+    const {isWebViewVisible, currentSlideData, allYnews} = this.props;
+    // if (!isWebViewVisible || !currentSlideData) {
+    //   return <View style={styles.container} />;
+    // }
+    console.log(
+      'currentSlideData1',
+      allYnews && allYnews.length,
+      this.props.currentNewsSlideIndex,
+    );
+    // const {link, title} = currentSlideData;
+    // const {source_name, source_url} = news_obj;
+    // console.log('currentSlideData', currentSlideData);
 
     return (
       <View style={styles.container}>
@@ -41,16 +58,20 @@ class WebScreen extends Component {
             size={STATUS_BAR_HEIGHT * 0.8}
             onPress={this.handleBackOnPress}
           />
-          <Text style={styles.title}>{source_name}</Text>
+          <Text style={styles.title}>
+            {currentSlideData && currentSlideData.title.rendered}
+          </Text>
           <Icon name="more-vert" color={WHITE} size={STATUS_BAR_HEIGHT * 0.7} />
         </View>
-
+        <View>
+          {/* <Text>{JSON.stringify(this.props.currentSlideData)}</Text> */}
+        </View>
         <View style={styles.webViewContainer}>
           <WebView
             source={{
-              uri: source_url,
+              uri: currentSlideData && currentSlideData.link,
             }}
-            // style={styles.webView}
+            style={styles.webView}
             startInLoadingState
             scrollEnabled
             scalesPageToFit
@@ -88,14 +109,20 @@ const styles = StyleSheet.create({
 });
 
 export default connect(
-  state => ({
-    currentNewsSlideIndex: state.news.currentNewsSlideIndex,
-    isWebViewVisible: state.news.isWebViewVisible,
-    currentSlideData: state.news.newsList[state.news.currentNewsSlideIndex]
-      ? state.news.newsList[state.news.currentNewsSlideIndex]
-      : null,
-  }),
+  state =>
+    // console.log('state', state),
+    ({
+      currentNewsSlideIndex: state.news.currentNewsSlideIndex,
+      isWebViewVisible: state.news.isWebViewVisible,
+      allYnews: state.news.allYnews,
+      // currentSlideData: state.news.newsList[state.news.currentNewsSlideIndex]
+      //   ? state.news.newsList[state.news.currentNewsSlideIndex]
+      //   : null,
+      currentSlideData: state.news.allYnews[state.news.currentNewsSlideIndex]
+        ? state.news.allYnews[state.news.currentNewsSlideIndex]
+        : null,
+    }),
   dispatch => ({
-    actions: bindActionCreators({}, dispatch),
+    actions: bindActionCreators({fetchAllYnews}, dispatch),
   }),
 )(WebScreen);

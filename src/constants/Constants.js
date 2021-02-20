@@ -46,11 +46,11 @@ export const NEWS_CATEGORIES = [
     icon: 'https://inshorts.com/assets/images/cat_trending.png',
     label: 'TRENDING',
   },
-  {
-    id: 'bookmarks',
-    icon: 'https://inshorts.com/assets/images/cat_bookmarks.png',
-    label: 'BOOKMARKS',
-  },
+  // {
+  //   id: 'bookmarks',
+  //   icon: 'https://inshorts.com/assets/images/cat_bookmarks.png',
+  //   label: 'BOOKMARKS',
+  // },
 ];
 
 export const momentCalendarConfig = {

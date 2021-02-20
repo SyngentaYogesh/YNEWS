@@ -46,7 +46,7 @@ export class ShortsLoader extends Component {
           color={LIGHT_BLUE}
           style={[styles.icon, {marginTop: 10}]}
         />
-        <Text style={styles.title}>Loading Shorts...</Text>
+        <Text style={styles.title}>Loading Ynews...</Text>
       </View>
     );
   }

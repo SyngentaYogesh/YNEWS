@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {
   Text,
+  TextInput,
   StyleSheet,
   View,
   ScrollView,
@@ -10,7 +11,14 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import FastImage from 'react-native-fast-image';
 import {getScreenHeight, getScreenWidth} from '../helpers/DimensionsHelper';
-import {LIGHT_BLUE, BLACK, DARKER_GRAY, GRAY, WHITE} from '../constants/Colors';
+import {
+  LIGHT_BLUE,
+  BLACK,
+  DARKER_GRAY,
+  GRAY,
+  WHITE,
+  YNEWS_BRAND,
+} from '../constants/Colors';
 import {
   FONT_SIZE_LARGE,
   FONT_SIZE_NORMAL,
@@ -19,7 +27,10 @@ import {
 import {
   fetchTrendingTopics,
   fetchTopicNews,
+  fetchCategoryYnews,
   selectTopic,
+  fetchYnewsTrendingTopics,
+  fetchAllYnews,
 } from '../reducers/news';
 import {
   NEWS_CATEGORIES,
@@ -40,30 +51,38 @@ class MenuNavigationScreen extends Component {
   };
 
   componentDidMount = () => {
-    this.props.actions.fetchTrendingTopics();
+    // this.props.actions.fetchTrendingTopics();
+    this.props.actions.fetchYnewsTrendingTopics();
   };
 
   handleMenuOnPress = item => {
-    const {tag} = item;
-    this.props.actions.selectTopic(tag);
-    this.props.actions.fetchTopicNews(tag, 1);
+    console.log('all', item);
+    const {id} = item;
+    this.props.actions.selectTopic(id);
+    // this.props.actions.fetchTopicNews(tag, 1);
+    this.props.actions.fetchCategoryYnews(id, 1);
     this.props.moveToPage(1);
   };
 
   renderCategoriesHeader = () => {
     return (
       <View style={styles.titleContent}>
-        <Text style={styles.contentTitle}>CATEGORIES</Text>
-        <View style={styles.divider} />
+        {/* <Text style={styles.contentTitle}>CATEGORIES</Text> */}
+        {/* <View style={styles.divider} /> */}
       </View>
     );
   };
 
   handleCategoryOnPress = item => {
-    if (item.id !== 'bookmarks') {
+    console.log('shortcut id', item);
+    if (item.id !== 'all_news') {
       this.props.actions.selectCategory(item.id);
-      this.props.moveToPage(1);
       this.props.actions.fetchCategoryNews(item.id);
+      this.props.moveToPage(1);
+    } else {
+      this.props.actions.selectCategory(item.id);
+      this.props.actions.fetchAllYnews(1);
+      this.props.moveToPage(1);
     }
   };
 
@@ -81,7 +100,7 @@ class MenuNavigationScreen extends Component {
               <View
                 style={{
                   alignItems: 'center',
-                  marginHorizontal: 20,
+                  marginHorizontal: 25,
                   marginVertical: 8,
                   opacity: isSelected ? 1 : 0.6,
                 }}>
@@ -110,7 +129,7 @@ class MenuNavigationScreen extends Component {
   renderSuggestedTopicsHeader = () => {
     return (
       <View style={styles.titleContent}>
-        <Text style={styles.contentTitle}>SUGGESTED TOPICS</Text>
+        <Text style={styles.contentTitle}>CATEGORIES</Text>
         <View style={styles.divider} />
       </View>
     );
@@ -121,7 +140,8 @@ class MenuNavigationScreen extends Component {
     return (
       <View style={styles.menusContainer}>
         {this.props.trendingTopics.map((item, index) => {
-          const {tag, image_url, label} = item;
+          // const {tag, image_url, label} = item;
+          const {name, slug, id} = item;
           return (
             <View style={styles.menuOuterWrapper} key={String(index)}>
               <TouchableOpacity
@@ -137,7 +157,8 @@ class MenuNavigationScreen extends Component {
                 <FastImage
                   style={{flex: 1}}
                   source={{
-                    uri: image_url,
+                    uri:
+                      'https://upload.wikimedia.org/wikipedia/commons/a/a0/APK_format_icon.png',
                   }}
                   resizeMode={FastImage.resizeMode.stretch}
                 />
@@ -146,20 +167,22 @@ class MenuNavigationScreen extends Component {
                   style={[
                     {height: styles.menuOuterWrapper.height / 4},
                     styles.absoluteBottom,
-                  ]}></LinearGradient>
+                  ]}
+                />
                 <Text
                   style={styles.topicLabel}
                   numberOfLines={1}
                   ellipsizeMode="tail">
-                  {label}
+                  {name}
                 </Text>
-                {tag === selectedTopicId ? (
+                {id === selectedTopicId ? (
                   <View
                     style={[
                       {flex: 1},
                       styles.absolute,
-                      {backgroundColor: LIGHT_BLUE, opacity: 0.4},
-                    ]}></View>
+                      {backgroundColor: YNEWS_BRAND, opacity: 0.4},
+                    ]}
+                  />
                 ) : null}
               </TouchableOpacity>
             </View>
@@ -169,10 +192,40 @@ class MenuNavigationScreen extends Component {
     );
   };
 
+  renderMainHeader = () => {
+    return (
+      <View style={styles.mainHeader}>
+        {/* <Text style={styles.contentTitle}>CATEGORIES</Text> */}
+        {/* <View style={styles.divider} /> */}
+      </View>
+    );
+  };
+
+  renderSearchInput = () => {
+    return (
+      <View style={styles.searchInput}>
+        <TextInput
+          placeholder={'Search Post'}
+          style={{
+            // height: 100,
+            // width: 100,
+            borderColor: 'gray',
+            borderWidth: 1,
+          }}
+          // onChangeText={searchedTitle => (
+          //   <Card title={shows.data.searchedTitle} />
+          // )}
+        />
+      </View>
+    );
+  };
+
   renderCategories = () => {
     return (
       <React.Fragment>
-        {this.renderCategoriesHeader()}
+        {/* {this.renderCategoriesHeader()} */}
+        {this.renderMainHeader()}
+        {this.renderSearchInput()}
         {this.renderCategoriesContent()}
       </React.Fragment>
     );
@@ -204,7 +257,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 12,
+    paddingTop: 0,
+    marginTop: 0,
   },
   scrollView: {
     flex: 1,
@@ -221,7 +275,7 @@ const styles = StyleSheet.create({
     marginVertical: 1,
   },
   menuInnerWrapper: {
-    borderColor: LIGHT_BLUE + 'AA',
+    borderColor: YNEWS_BRAND + 'AA',
     borderWidth: 1.5,
     borderRadius: 4,
   },
@@ -237,6 +291,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+  },
+  searchInput: {
+    marginTop: 30,
+    marginHorizontal: MARGIN_HORIZONTAL + 4,
+    borderRadius: 1,
   },
   titleContent: {
     marginHorizontal: MARGIN_HORIZONTAL + 4,
@@ -275,7 +334,10 @@ const styles = StyleSheet.create({
     color: GRAY,
   },
   selectedCategoryText: {
-    color: LIGHT_BLUE,
+    color: YNEWS_BRAND,
+  },
+  mainHeader: {
+    flex: 1,
   },
 });
 
@@ -288,11 +350,14 @@ export default connect(
   dispatch => ({
     actions: bindActionCreators(
       {
+        fetchYnewsTrendingTopics,
         fetchTrendingTopics,
         selectCategory,
         fetchCategoryNews,
         fetchTopicNews,
+        fetchCategoryYnews,
         selectTopic,
+        fetchAllYnews,
       },
       dispatch,
     ),

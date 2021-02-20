@@ -8,27 +8,41 @@ import WebScreen from './WebScreen';
 import Carousel from 'react-native-snap-carousel';
 import {getScreenWidth, getScreenHeight} from '../helpers/DimensionsHelper';
 import {BLACK} from '../constants/Colors';
-import {setWebViewVisiblity, fetchCategoryNews} from '../reducers/news';
+import {
+  setWebViewVisiblity,
+  fetchCategoryNews,
+  fetchAllYnews,
+} from '../reducers/news';
 import {bindActionCreators} from 'redux';
 import ShortsLoader from '../components/ShortsLoader';
 const screens = ['menu-navigation', 'news-stack', 'web'];
 
 class HomeScreen extends Component {
-  // shouldComponentUpdate = nextProps => {
-  //   const currentProps = this.props;
-  //   return true;
-  //   if (currentProps.isNewsListEmpty !== nextProps.isNewsListEmpty) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // };
+  constructor(props) {
+    super(props);
+  }
+  shouldComponentUpdate = nextProps => {
+    const currentProps = this.props;
+    return true;
+    // if (currentProps.isNewsListEmpty !== nextProps.isNewsListEmpty) {
+    //   return true;
+    // } else {
+    //   return false;
+    // }
+    if (currentProps.isAllYnewsListEmpty !== nextProps.isAllYnewsListEmpty) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   componentDidMount() {
-    this.props.actions.fetchCategoryNews('top_stories');
+    // this.props.actions.fetchCategoryNews('top_stories');
+    this.props.actions.fetchAllYnews(1);
   }
 
   moveToPage = index => {
+    console.log('logINdex', index);
     this.viewpager.setPage(index);
   };
 
@@ -41,24 +55,34 @@ class HomeScreen extends Component {
   };
 
   render() {
-    const {isNewsListEmpty, newsListLength} = this.props;
-    console.log('isNewsListEmpty', isNewsListEmpty, newsListLength);
+    const {isNewsListEmpty, newsListLength, isAllYnewsListEmpty} = this.props;
+    // console.log('isNewsListEmpty', isNewsListEmpty, newsListLength);
     if (Platform.OS === 'android' || Platform.OS === 'ios') {
+      // console.log(
+      //   'isAllYnewsListEmpty',
+      //   isAllYnewsListEmpty,
+      //   this.props.allYnewsListLength,
+      // );
       return (
         <View style={styles.container}>
-          <StatusBar backgroundColor={BLACK} />
+          {/* <StatusBar backgroundColor={BLACK} /> */}
           <ViewPager
             ref={viewpager => {
               this.viewpager = viewpager;
             }}
             style={styles.viewPager}
-            initialPage={1}
+            initialPage={0}
             onPageSelected={this.onPageSelected}>
             <View>
               <MenuNavigationScreen moveToPage={this.moveToPage} />
             </View>
             <View>
-              {isNewsListEmpty ? <ShortsLoader /> : <NewsStackScreen />}
+              {/* <Text>{JSON.stringify(this.props.allYnews)}</Text> */}
+              {isAllYnewsListEmpty ? (
+                <ShortsLoader />
+              ) : (
+                <NewsStackScreen moveToPage={this.moveToPage} />
+              )}
             </View>
             <View>
               <WebScreen moveToPage={this.moveToPage} />
@@ -78,6 +102,7 @@ const styles = StyleSheet.create({
   },
   viewPager: {
     flex: 1,
+    marginTop: 0,
   },
   center: {
     justifyContent: 'center',
@@ -86,15 +111,21 @@ const styles = StyleSheet.create({
 });
 
 export default connect(
-  state => ({
-    isNewsListEmpty: state.news.newsList.length === 0,
-    newsListLength: state.news.newsList.length,
-  }),
+  state => (
+    console.log('state', state),
+    {
+      isNewsListEmpty: state.news.newsList.length === 0,
+      newsListLength: state.news.newsList.length,
+      isAllYnewsListEmpty: state.news.allYnews.length === 0,
+      // allYnewsListLength: state.news.allYnews.length,
+    }
+  ),
   dispatch => ({
     actions: bindActionCreators(
       {
         setWebViewVisiblity,
         fetchCategoryNews,
+        fetchAllYnews,
       },
       dispatch,
     ),

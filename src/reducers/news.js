@@ -12,12 +12,18 @@ const SELECT_CATEGORY = 'SELECT_CATEGORY';
 const SELECT_TOPIC = 'SELECT_TOPIC';
 
 const FETCH_TRENDING_TOPICS_SUCCESS = 'FETCH_TRENDING_TOPICS_SUCCESS';
+const FETCH_YNEWS_TRENDING_TOPICS_SUCCESS =
+  'FETCH_YNEWS_TRENDING_TOPICS_SUCCESS';
 
 const FETCH_CATEGORY_NEWS_LOADING = 'FETCH_CATEGORY_NEWS_LOADING';
 const FETCH_CATEGORY_NEWS_SUCCESS = 'FETCH_CATEGORY_NEWS_SUCCESS';
 
 const FETCH_TOPIC_NEWS_LOADING = 'FETCH_TOPIC_NEWS_LOADING';
 const FETCH_TOPIC_NEWS_SUCCESS = 'FETCH_TOPIC_NEWS_SUCCESS';
+const FETCH_YNEWS_TOPIC_NEWS_SUCCESS = 'FETCH_YNEWS_TOPIC_NEWS_SUCCESS';
+
+const FETCH_ALL_Y_NEWS_LOADING = 'FETCH_ALL_Y_NEWS_LOADING';
+const FETCH_ALL_Y_NEWS_SUCCESS = 'FETCH_ALL_Y_NEWS_SUCCESS';
 
 const initialState = {
   isLoading: false,
@@ -25,11 +31,12 @@ const initialState = {
   currentNewsSlideIndex: 0,
   isWebViewVisible: false,
   trendingTopics: [],
-  selectedCategory: 'top_stories',
+  selectedCategory: 'all_news',
   newsOffset: null,
   currentTopic: null,
   selectedTopicId: null,
   page: 1,
+  allYnews: [],
 };
 
 const reducer = (state = initialState, action) => {
@@ -68,6 +75,14 @@ const reducer = (state = initialState, action) => {
         trendingTopics: result.trending_tags,
       };
     }
+    case FETCH_YNEWS_TRENDING_TOPICS_SUCCESS: {
+      const {result} = action;
+      return {
+        ...state,
+        trendingTopics: result,
+      };
+    }
+
     case FETCH_CATEGORY_NEWS_LOADING: {
       return {
         ...state,
@@ -121,12 +136,46 @@ const reducer = (state = initialState, action) => {
         isLoading: false,
       };
     }
+
+    case FETCH_YNEWS_TOPIC_NEWS_SUCCESS: {
+      const {result, catId, page} = action;
+      return {
+        ...state,
+        allYnews:
+          page === 1
+            ? result.news_list
+            : [...state.allYnews, ...result.news_list],
+        selectedTopicId: catId,
+        page,
+        isLoading: false,
+      };
+    }
+
     case FETCH_TOPIC_NEWS_LOADING: {
       return {
         ...state,
         isLoading: true,
       };
     }
+    case FETCH_ALL_Y_NEWS_LOADING: {
+      return {
+        ...state,
+        isLoading: true,
+      };
+    }
+    case FETCH_ALL_Y_NEWS_SUCCESS: {
+      const {result, page} = action;
+      return {
+        ...state,
+        allYnews:
+          page === 1
+            ? result.news_list
+            : [...state.allYnews, ...result.news_list],
+        page,
+        isLoading: false,
+      };
+    }
+
     default: {
       return {...state};
     }
@@ -157,11 +206,30 @@ export const fetchTrendingTopics = () => {
 
     Axios.get(URL)
       .then(res => {
-        console.log('__res', res);
+        // console.log('__res', res);
         dispatch({
           type: FETCH_TRENDING_TOPICS_SUCCESS,
           namespace: NAMESPACE,
           result: res.data.data,
+        });
+      })
+      .catch(err => {
+        console.log('_err', err);
+      });
+  };
+};
+
+export const fetchYnewsTrendingTopics = () => {
+  return dispatch => {
+    let URL = `http://www.tizenhelp.com/wp-json/wp/v2/categories`;
+
+    Axios.get(URL)
+      .then(res => {
+        // console.log('category__res', res.data);
+        dispatch({
+          type: FETCH_YNEWS_TRENDING_TOPICS_SUCCESS,
+          namespace: NAMESPACE,
+          result: res.data,
         });
       })
       .catch(err => {
@@ -248,6 +316,78 @@ export const fetchTopicNews = (topicId, page = 1) => {
           topicId,
           page,
         });
+        // }, 5);
+      })
+      .catch(err => {
+        console.log('__Err', err);
+      });
+  };
+};
+
+export const fetchCategoryYnews = (catId, page = 1) => {
+  console.log('catid', catId);
+  return dispatch => {
+    dispatch({type: FETCH_TOPIC_NEWS_LOADING, namespace: NAMESPACE});
+    let URL = `http://www.tizenhelp.com/wp-json/wp/v2/posts?categories=${catId}&page=${page}&limit=10
+    `;
+    console.log('url', URL);
+
+    Axios.get(URL)
+      .then(res => {
+        const result = res.data;
+        console.log('perCate', result);
+        // if (page === 1 && result.news_list.length) {
+        //   // Clearing news carousel active index
+        dispatch({
+          type: FETCH_YNEWS_TOPIC_NEWS_SUCCESS,
+          namespace: NAMESPACE,
+          result: {...result, news_list: result},
+          catId,
+          page,
+        });
+        // }
+        // setTimeout(() => {
+        // dispatch({
+        //   type: FETCH_YNEWS_TOPIC_NEWS_SUCCESS,
+        //   namespace: NAMESPACE,
+        //   result,
+        //   catId,
+        //   page,
+        // });
+        // }, 5);
+      })
+      .catch(err => {
+        console.log('__Err', err);
+      });
+  };
+};
+
+export const fetchAllYnews = (page = 1) => {
+  return dispatch => {
+    dispatch({type: FETCH_ALL_Y_NEWS_LOADING, namespace: NAMESPACE});
+    // let URL = `${INSHORTS_BASE_URL}/search/trending_topics/${topicId}?page=${page}&type=NEWS_CATEGORY`;
+    let URL = `http://www.tizenhelp.com/wp-json/wp/v2/posts?page=${page}&limit=10`;
+
+    Axios.get(URL)
+      .then(res => {
+        const result = res.data;
+        console.log('result', result.length);
+        // if (page != 1 && result.news_list.length) {
+        //   // Clearing news carousel active index
+        dispatch({
+          type: FETCH_ALL_Y_NEWS_SUCCESS,
+          namespace: NAMESPACE,
+          result: {...result, news_list: result},
+          page,
+        });
+        // }
+        // setTimeout(() => {
+        // dispatch({
+        //   type: FETCH_ALL_Y_NEWS_SUCCESS,
+        //   namespace: NAMESPACE,
+        //   result: result,
+        //   page,
+        // });
         // }, 5);
       })
       .catch(err => {
