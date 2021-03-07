@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import MenuNavigationScreen from './MenuNavigationScreen';
 import NewsStackScreen from './NewsStackScreen';
 import WebScreen from './WebScreen';
+import TabScreen from './TabScreen';
 import Carousel from 'react-native-snap-carousel';
 import {getScreenWidth, getScreenHeight} from '../helpers/DimensionsHelper';
 import {BLACK} from '../constants/Colors';
@@ -12,10 +13,11 @@ import {
   setWebViewVisiblity,
   fetchCategoryNews,
   fetchAllYnews,
+  setCurrentCategoryId,
 } from '../reducers/news';
 import {bindActionCreators} from 'redux';
 import ShortsLoader from '../components/ShortsLoader';
-const screens = ['menu-navigation', 'news-stack', 'web'];
+const screens = ['tabs,menu-navigation', 'news-stack', 'web'];
 
 class HomeScreen extends Component {
   constructor(props) {
@@ -38,7 +40,7 @@ class HomeScreen extends Component {
 
   componentDidMount() {
     // this.props.actions.fetchCategoryNews('top_stories');
-    this.props.actions.fetchAllYnews(1);
+    this.props.actions.fetchAllYnews(this.props.categoryId, 1);
   }
 
   moveToPage = index => {
@@ -55,7 +57,12 @@ class HomeScreen extends Component {
   };
 
   render() {
-    const {isNewsListEmpty, newsListLength, isAllYnewsListEmpty} = this.props;
+    const {
+      isNewsListEmpty,
+      newsListLength,
+      isAllYnewsListEmpty,
+      categoryId,
+    } = this.props;
     // console.log('isNewsListEmpty', isNewsListEmpty, newsListLength);
     if (Platform.OS === 'android' || Platform.OS === 'ios') {
       // console.log(
@@ -74,16 +81,19 @@ class HomeScreen extends Component {
             initialPage={0}
             onPageSelected={this.onPageSelected}>
             <View>
-              <MenuNavigationScreen moveToPage={this.moveToPage} />
+              <TabScreen categoryId={categoryId} moveToPage={this.moveToPage} />
             </View>
-            <View>
-              {/* <Text>{JSON.stringify(this.props.allYnews)}</Text> */}
-              {isAllYnewsListEmpty ? (
+            {/* <View>
+              <MenuNavigationScreen moveToPage={this.moveToPage} />
+            </View> */}
+            {/* <View> */}
+            {/* <Text>{JSON.stringify(this.props.allYnews)}</Text> */}
+            {/* {isAllYnewsListEmpty ? (
                 <ShortsLoader />
               ) : (
                 <NewsStackScreen moveToPage={this.moveToPage} />
-              )}
-            </View>
+              )} */}
+            {/* </View> */}
             <View>
               <WebScreen moveToPage={this.moveToPage} />
             </View>
@@ -117,6 +127,7 @@ export default connect(
       isNewsListEmpty: state.news.newsList.length === 0,
       newsListLength: state.news.newsList.length,
       isAllYnewsListEmpty: state.news.allYnews.length === 0,
+      categoryId: state.news.categoryId,
       // allYnewsListLength: state.news.allYnews.length,
     }
   ),
@@ -126,6 +137,7 @@ export default connect(
         setWebViewVisiblity,
         fetchCategoryNews,
         fetchAllYnews,
+        setCurrentCategoryId,
       },
       dispatch,
     ),

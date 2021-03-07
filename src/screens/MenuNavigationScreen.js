@@ -45,9 +45,48 @@ const SCREEN_WIDTH = getScreenWidth();
 const MARGIN_HORIZONTAL = 8;
 const ITEM_WIDTH = (SCREEN_WIDTH - MARGIN_HORIZONTAL * 2) / 3;
 
+function Closest(el, selector) {
+  const matchesSelector =
+    el.matches ||
+    el.webkitMatchesSelector ||
+    el.mozMatchesSelector ||
+    el.msMatchesSelector;
+  while (el) {
+    if (matchesSelector.call(el, selector)) {
+      return el;
+    }
+    el = el.parentElement;
+  }
+  return null;
+}
 class MenuNavigationScreen extends Component {
   state = {
     selectedTopic: null,
+    modal1: false,
+    modal2: false,
+  };
+
+  showModal = key => e => {
+    e.preventDefault(); // 修复 Android 上点击穿透
+    this.setState({
+      [key]: true,
+    });
+  };
+  onClose = key => () => {
+    this.setState({
+      [key]: false,
+    });
+  };
+
+  onWrapTouchStart = e => {
+    // fix touch to scroll background page on iOS
+    if (!/iPhone|iPod|iPad/i.test(navigator.userAgent)) {
+      return;
+    }
+    const pNode = Closest(e.target, '.am-modal-content');
+    if (!pNode) {
+      e.preventDefault();
+    }
   };
 
   componentDidMount = () => {
@@ -81,7 +120,7 @@ class MenuNavigationScreen extends Component {
       this.props.moveToPage(1);
     } else {
       this.props.actions.selectCategory(item.id);
-      this.props.actions.fetchAllYnews(1);
+      this.props.actions.fetchAllYnews(null, 1);
       this.props.moveToPage(1);
     }
   };

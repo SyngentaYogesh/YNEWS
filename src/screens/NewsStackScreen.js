@@ -55,7 +55,7 @@ class NewsStackScreen extends Component {
   componentDidMount = () => {
     // const {selectedCategory} = this.props;
     // this.props.actions.fetchCategoryNews(selectedCategory);
-    this.props.actions.fetchAllYnews(1);
+    this.props.actions.fetchAllYnews(null, 1);
   };
 
   handleEndReached = () => {

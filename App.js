@@ -3,12 +3,24 @@ import {Platform, View} from 'react-native';
 import {Provider} from 'react-redux';
 import {applyMiddleware, createStore} from 'redux';
 import thunk from 'redux-thunk';
+import {Provider as PaperProvider, DefaultTheme} from 'react-native-paper';
 import AppContainer from './src/navigator';
 import rootReducer from './src/reducers';
 import {setScreenHeight} from './src/helpers/DimensionsHelper';
-
+import {YNEWS_BRAND} from './src/constants/Colors';
 console.disableYellowBox = true;
 const store = createStore(rootReducer, applyMiddleware(thunk));
+
+const theme = {
+  ...DefaultTheme,
+  roundness: 2,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: YNEWS_BRAND,
+    accent: 'white',
+    text: 'black',
+  },
+};
 
 class App extends Component {
   state = {
@@ -20,7 +32,9 @@ class App extends Component {
     if (isLoaded) {
       return (
         <Provider store={store}>
-          <AppContainer />
+          <PaperProvider theme={theme}>
+            <AppContainer />
+          </PaperProvider>
         </Provider>
       );
     } else {
@@ -31,7 +45,8 @@ class App extends Component {
             var {x, y, width, height} = event.nativeEvent.layout;
             setScreenHeight(height);
             this.setState({isLoaded: true});
-          }}></View>
+          }}
+        />
       );
     }
   }

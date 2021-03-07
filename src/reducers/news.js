@@ -7,11 +7,16 @@ const FETCH_NEWS_SUCCESS = 'FETCH_NEWS_SUCCESS';
 const FETCH_NEWS_FAILED = 'FETCH_NEWS_FAILED';
 
 const SET_CURRENT_SLIDE_INDEX = 'SET_CURRENT_SLIDE_INDEX';
+const SET_CURRENT_CATEGORY_ID = 'SET_CURRENT_CATEGORY_ID';
+
 const SET_WEBVIEW_VISIBILITY = 'SET_WEBVIEW_VISIBILITY';
 const SELECT_CATEGORY = 'SELECT_CATEGORY';
 const SELECT_TOPIC = 'SELECT_TOPIC';
 
 const FETCH_TRENDING_TOPICS_SUCCESS = 'FETCH_TRENDING_TOPICS_SUCCESS';
+
+const FETCH_YNEWS_TRENDING_TOPICS_LOADING =
+  'FETCH_YNEWS_TRENDING_TOPICS_LOADING';
 const FETCH_YNEWS_TRENDING_TOPICS_SUCCESS =
   'FETCH_YNEWS_TRENDING_TOPICS_SUCCESS';
 
@@ -37,6 +42,7 @@ const initialState = {
   selectedTopicId: null,
   page: 1,
   allYnews: [],
+  categoryId: null,
 };
 
 const reducer = (state = initialState, action) => {
@@ -64,6 +70,11 @@ const reducer = (state = initialState, action) => {
       const {index} = action;
       return {...state, currentNewsSlideIndex: index};
     }
+    case SET_CURRENT_CATEGORY_ID: {
+      const {index} = action;
+      return {...state, categoryId: index};
+    }
+
     case SET_WEBVIEW_VISIBILITY: {
       const {isWebViewVisible} = action;
       return {...state, isWebViewVisible};
@@ -73,6 +84,13 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         trendingTopics: result.trending_tags,
+      };
+    }
+
+    case FETCH_YNEWS_TRENDING_TOPICS_LOADING: {
+      return {
+        ...state,
+        isLoading: true,
       };
     }
     case FETCH_YNEWS_TRENDING_TOPICS_SUCCESS: {
@@ -187,6 +205,13 @@ export default reducer;
 export const setCurrentNewsSlideIndex = index => {
   return {
     type: SET_CURRENT_SLIDE_INDEX,
+    namespace: NAMESPACE,
+    index,
+  };
+};
+export const setCurrentCategoryId = index => {
+  return {
+    type: SET_CURRENT_CATEGORY_ID,
     namespace: NAMESPACE,
     index,
   };
@@ -324,7 +349,7 @@ export const fetchTopicNews = (topicId, page = 1) => {
   };
 };
 
-export const fetchCategoryYnews = (catId, page = 1) => {
+export const fetchCategoryYnews = (catId = null, page = 1) => {
   console.log('catid', catId);
   return dispatch => {
     dispatch({type: FETCH_TOPIC_NEWS_LOADING, namespace: NAMESPACE});
@@ -362,11 +387,18 @@ export const fetchCategoryYnews = (catId, page = 1) => {
   };
 };
 
-export const fetchAllYnews = (page = 1) => {
+export const fetchAllYnews = (catId = null, page = 1) => {
   return dispatch => {
     dispatch({type: FETCH_ALL_Y_NEWS_LOADING, namespace: NAMESPACE});
     // let URL = `${INSHORTS_BASE_URL}/search/trending_topics/${topicId}?page=${page}&type=NEWS_CATEGORY`;
-    let URL = `http://www.tizenhelp.com/wp-json/wp/v2/posts?page=${page}&limit=10`;
+    let URL;
+    if (catId === null) {
+      console.log('catId', catId);
+      URL = `http://www.tizenhelp.com/wp-json/wp/v2/posts?page=${page}&limit=10`;
+    } else {
+      console.log('catID', catId);
+      URL = `http://www.tizenhelp.com/wp-json/wp/v2/posts?categories=${catId}&page=${page}&limit=10`;
+    }
 
     Axios.get(URL)
       .then(res => {
